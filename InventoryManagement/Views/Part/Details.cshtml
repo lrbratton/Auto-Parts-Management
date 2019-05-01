@@ -1,0 +1,101 @@
+﻿@model InventoryManagement.Models.Part
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Part</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Condition)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Condition)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Area)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Area)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Price)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Price)
+        </dd>
+
+        <dt>
+            Car Details
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Car.Details)
+        </dd>
+    </dl>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        if (Model.Sold == true)
+        {
+            <dl class="dl-horizontal">
+                <dt>
+                    Sold To:
+                </dt>
+
+                <dd>
+                    @ViewBag.CustomerDetail
+                </dd>
+
+                <dt>
+                    On:
+                </dt>
+                <dd>
+                    @ViewBag.saleDate
+                </dd>
+
+                <dt>
+                    Order#:
+                </dt>
+                <dd>
+                    @ViewBag.orderNumber
+                </dd>
+            </dl>
+        }
+
+        else
+
+        {
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Add To Order" class="btn btn-default" formaction=@Url.Action("UpdateOrder", new { id=Model.PartID}) />
+                    <input type="submit" value="Sell" class="btn btn-default" formaction=@Url.Action("SellPart", new { id=Model.PartID}) />
+                    
+                </div>
+            </div>
+        }
+    }
+
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.PartID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

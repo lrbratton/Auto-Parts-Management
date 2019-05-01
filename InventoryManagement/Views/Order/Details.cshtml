@@ -1,0 +1,60 @@
+﻿@model InventoryManagement.Models.Order
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Receipt</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Paid)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Paid)
+        </dd>
+
+        <dt>
+            Customer Name
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Customer.Name)
+        </dd>
+        <dt>
+            Customer ID
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Customer.CustomerID)
+        </dd>
+
+        <dt>
+            Part Sold
+        </dt>
+        <dd>
+            @Html.Raw(ViewBag.partDetail)
+        </dd>
+
+        <dt>
+            Sale Price
+        </dt>
+        <dd>
+            @Html.Raw(ViewBag.salePrice)
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

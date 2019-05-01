@@ -1,0 +1,105 @@
+﻿@model IEnumerable<InventoryManagement.Models.Part>
+
+@{
+    ViewBag.Title = "Parts";
+}
+
+<h2>Parts</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        @Html.ActionLink("Add New Part", "Create")
+    </div>
+
+    <div>
+        <h2>Items in Cart: @ViewBag.partCount</h2>
+        <p>@Html.Raw(ViewBag.partDetail)</p>
+    </div>
+    if (ViewBag.partCount > 0)
+    {
+        <input type="submit" class="btn btn-default" value="Process Order" formaction=@Url.Action("ProcessOrder") />
+        <input type="submit" class="btn btn-default" value="Clear Order" formaction=@Url.Action("CancelOrder","Order")>
+    }
+}
+<div class="text-danger">@TempData["buttonError"]</div><br />
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Condition)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Area)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Price)
+        </th>
+        <th>
+            Car Details
+        </th>
+        <th>
+            Availability
+        </th>
+        <th></th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Condition)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Area)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Car.Details)
+            </td>
+
+            <td>
+                @if (item.Sold == false)
+                {
+
+                    using (Html.BeginForm())
+                    {
+                        @Html.AntiForgeryToken()
+
+                        if (ViewBag.orderedParts.Contains(item.PartID))
+                        {
+                            <input id="sellbtn" type="submit" value="Remove From Order" class="btn btn-default" formaction=@Url.Action("RemoveFromOrder", new { id = item.PartID}) />
+                        }
+                        else
+                        {
+                            <input id="sellbtn" type="submit" value="Add To Order" class="btn btn-default" formaction=@Url.Action("UpdateOrder", new { id = item.PartID}) />
+                        }
+                    }
+                }
+                else
+                {
+                    <div>
+                        <p>Sold</p>
+                    </div>
+                }
+            </td>
+            <td>
+                @if (item.Sold == false)
+                {
+                    @Html.ActionLink("Edit", "Edit", new { id = item.PartID }) <br />
+                    @Html.ActionLink("Delete", "Delete", new { id = item.PartID }) <br />
+                }
+                @Html.ActionLink("Details", "Details", new { id = item.PartID }) 
+            </td>
+        </tr>
+    }
+
+</table>

@@ -1,0 +1,29 @@
+﻿@model InventoryManagement.Models.Order
+
+@{
+    ViewBag.Title = "Return Parts";
+}
+
+<h2>Return Parts</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Order</h4>
+        <hr />
+        @foreach (var part in Model.Parts)
+        {
+            <div class="form-group">
+                <label class="control-label col-md-2">Part Description</label>
+                <div class="col-md-10">
+                    @Html.DisplayFor(modelItem => part.Details)
+                </div>
+                <div class="col-md-6">
+                    <input type="submit" value="Return Part" class="btn btn-default" formaction=@Url.Action("ReturnParts", new {partID=part.PartID }) />
+                </div>
+            </div>
+        }
+    </div>
+}
