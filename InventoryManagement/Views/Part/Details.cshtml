@@ -53,7 +53,7 @@
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
-        if (Model.Sold == true)
+        if (Model.Status == "Sold")
         {
             <dl class="dl-horizontal">
                 <dt>

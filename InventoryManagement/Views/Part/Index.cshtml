@@ -23,25 +23,37 @@
     }
 }
 <div class="text-danger">@TempData["buttonError"]</div><br />
+
+@using (Html.BeginForm())
+{
+    <p>
+        <label>Name: </label>@Html.TextBox("NameSearch", null, new { @class = "form-control" })
+        <label>Make: </label>@Html.TextBox("MakeSearch", null, new { @class = "form-control" })
+        <label>Model: </label>@Html.TextBox("ModelSearch", null, new { @class = "form-control" })
+        <label>Chassis: </label> @Html.TextBox("ChassisSearch", null, new { @class = "form-control" })<br />
+        <input type="submit" class="btn btn-default" value="Search" />
+        <input type="submit" value="Clear" class="btn btn-default" formaction=@Url.Action("Index", new { nameSearch = "", makeSearch = "", modelSearch = "", chassisSearch="" }) />
+    </p>
+}
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.ActionLink("Name", "Index", new { sortOrder = ViewBag.NameSort })
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Condition)
+            Condition
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Area)
+            Area
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Price)
+            @Html.ActionLink("Price", "Index", new { sortOrder = ViewBag.PriceSort })
         </th>
         <th>
             Car Details
         </th>
         <th>
-            Availability
+            @Html.ActionLink("Status", "Index", new { sortOrder = ViewBag.StatusSort })
         </th>
         <th></th>
         <th></th>
@@ -67,7 +79,7 @@
             </td>
 
             <td>
-                @if (item.Sold == false)
+                @if (item.Status == "Available")
                 {
 
                     using (Html.BeginForm())
@@ -87,17 +99,17 @@
                 else
                 {
                     <div>
-                        <p>Sold</p>
+                        @Html.DisplayFor(modelItem => item.Status)
                     </div>
                 }
             </td>
             <td>
-                @if (item.Sold == false)
+                @if (item.Status != "Sold")
                 {
                     @Html.ActionLink("Edit", "Edit", new { id = item.PartID }) <br />
                     @Html.ActionLink("Delete", "Delete", new { id = item.PartID }) <br />
                 }
-                @Html.ActionLink("Details", "Details", new { id = item.PartID }) 
+                @Html.ActionLink("Details", "Details", new { id = item.PartID })
             </td>
         </tr>
     }

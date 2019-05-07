@@ -15,7 +15,7 @@ namespace InventoryManagement.Models
 
         [DisplayFormat(NullDisplayText = "No Number")]
         [Display(Name="Phone Number")]
-        public int PhNum { get; set; }
+        public string PhNum { get; set; }
 
         [StringLength(10, MinimumLength = 1)]
         public string StreetNum { get; set; }
@@ -26,6 +26,6 @@ namespace InventoryManagement.Models
         [StringLength(50, MinimumLength = 1)]
         public string Region { get; set; }
 
-        public int PostCode { get; set; }
+        public string PostCode { get; set; }
     }
 }

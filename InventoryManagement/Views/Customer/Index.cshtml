@@ -9,10 +9,22 @@
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
+@using (Html.BeginForm())
+{
+<div>
+    <p>
+        <label>Name: </label>@Html.TextBox("NameSearch", null, new { @class = "form-control" } )<br />
+        <label>Number: </label>@Html.TextBox("NumberSearch", null, new { @class = "form-control" } )<br />
+
+        <input type="submit" class="btn btn-default" value="Search" />
+        <input type="submit" value="Clear" class="btn btn-default" formaction=@Url.Action("Index", new { NameSearch = "", NumberSearch = "" }) />
+    </p>
+</div>
+}
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.ActionLink("Name", "Index", new { sortOrder = ViewBag.NameSort})
         </th>
         <th>
             @Html.DisplayNameFor(model => model.PhNum)
@@ -29,7 +41,7 @@
         <th>
             @Html.DisplayNameFor(model => model.PostCode)
         </th>
-       
+        <th></th>
         <th></th>
     </tr>
 
@@ -52,6 +64,12 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.PostCode)
+        </td>
+        <td>
+            @using (Html.BeginForm())
+            {
+                <input type="submit" class="btn btn-default" value="Find Orders" formaction=@Url.Action("Index", "Order", new { customerSearch = item.Name}) />
+            }
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id = item.CustomerID }) |

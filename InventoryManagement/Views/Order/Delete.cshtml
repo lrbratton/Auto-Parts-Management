@@ -27,6 +27,39 @@
             @Html.DisplayFor(model => model.Paid)
         </dd>
 
+        <dt>
+            Customer
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Customer.Name)
+        </dd>
+
+        @if (Model.Parts.Count() > 0)
+        {
+            <dt>
+                Part Sold
+            </dt>
+            <dd>
+                @Html.Raw(ViewBag.partDetail)
+            </dd>
+
+            <dt>
+                Sale Price
+            </dt>
+            <dd>
+                @Html.Raw(ViewBag.salePrice)
+            </dd>
+        }
+        @if (Model.OrderHistory != null)
+        {
+            <dt>
+                Parts Returned:
+            </dt>
+            <dd>
+                @Html.Raw(Model.OrderHistory)
+            </dd>
+        }
+
     </dl>
 
     @using (Html.BeginForm()) {

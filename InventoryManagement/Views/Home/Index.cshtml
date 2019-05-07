@@ -1,31 +1,41 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Welcome";
 }
 
 <div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <h1>Auto Part Management</h1>
+    <p class="lead">Welcome to your new Inventory Management system. Set up specifically for use in the automotive wrecking industry.</p>
+    <p class="lead">Please note this software is still in development, so you are likely to step on a few bugs while you are here.</p>
+    <p class="lead">If you do encounter any of these, you are welcome to email lazbratton@gmail.com.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="text-center">Basic Rundown</h2>
+        <p>
+            This app was primarily designed to be an experimental project.
+            A user can add a car, and details relevant to wrecking said car.
+            From there, they can add parts, which can subsequently be added to an order and sold to a customer.
+            The app has been designed to store relevant information, but as this has not been developed for someone in the industry some features may be superfluous, and others lacking in needed functionality.
+        </p>
+        <p>
+            Features that have yet to be implemented are user authentication, which would allow users of different priveledges to access and edit different data.
+            This feature would be implemented alongside optimistic concurrency.
+        </p>
+    </div>
 </div>
 
 <div class="row">
     <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
+        <h2>To do:</h2>
+        <ul>
+            <li>Validation</li>
+            <li>Sort Order overriding search criteria</li>
+            <li>Edit customer resulting in concurrency error</li>
+        </ul>
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+        <h2>GitHub</h2>
+        <p>Code for this project can be found at <a href="https://github.com/lrbratton/Auto-Parts-Management">www.GitHub.com/lrbratton/Auto-Parts-Management</a></p>
     </div>
 </div>

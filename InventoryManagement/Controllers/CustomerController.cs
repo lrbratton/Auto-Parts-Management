@@ -16,9 +16,31 @@ namespace InventoryManagement.Controllers
         private InventoryContext db = new InventoryContext();
 
         // GET: Customer
-        public ActionResult Index()
+        public ViewResult Index(string sortOrder, string nameSearch, string numberSearch)
         {
-            return View(db.Customer.ToList());
+            var customers = from c in db.Customer select c;
+            if(!String.IsNullOrEmpty(nameSearch))
+            {
+                customers = customers.Where(c => c.Name.Contains(nameSearch));
+            }
+            //If only one result, skip check
+            if(customers.Count()>1 && !String.IsNullOrEmpty(numberSearch))
+            {
+                customers = customers.Where(c => c.PhNum.Contains(numberSearch));
+            }
+
+            ViewBag.NameSort = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            switch(sortOrder)
+            {
+                case "name_desc":
+                    customers = customers.OrderByDescending(c => c.Name);
+                    break;
+                default:
+                    customers = customers.OrderBy(c => c.Name);
+                    break;
+            }
+            ModelState.Clear();
+            return View(customers.ToList());
         }
 
         // GET: Customer/Details/5
@@ -40,13 +62,13 @@ namespace InventoryManagement.Controllers
         public ActionResult Create()
         {
             List<int> orderedParts = Session["PartList"] as List<int>;
-            if(orderedParts == null)
-            {
-                ViewBag.orderInProgress = false;
+            if(orderedParts != null)
+            {               
+                ViewBag.orderInProgress = true;
             }
             else
             {
-                ViewBag.orderInProgress = true;
+                ViewBag.orderInProgress = false;
             }
             return View();
         }
@@ -107,7 +129,14 @@ namespace InventoryManagement.Controllers
             if (ModelState.IsValid)
             {
                 db.Entry(customer).State = EntityState.Modified;
-                db.SaveChanges();
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+
+                }
                 return RedirectToAction("Index");
             }
             return View(customer);

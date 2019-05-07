@@ -9,19 +9,31 @@
 <p>
     @Html.ActionLink("Create New", "Index", "Part")
 </p>
+@using (Html.BeginForm())
+{
+<p>
+    <label>Customer: </label>@Html.TextBox("CustomerSearch", null, new { @class="form-control"}) <br />
+    <input type="submit" class="btn btn-default" value="Search" />
+    <input type="submit" value="Clear" class="btn btn-default" formaction=@Url.Action("Index", new { customerSearch = "" }) />
+
+</p>
+}
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Date)
+            @Html.ActionLink("Date", "Index", new { sortOrder = ViewBag.DateSort})
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Paid)
+            @Html.ActionLink("Paid", "Index", new { sortOrder = ViewBag.PaidSort })
         </th>
         <th>
-            Customer
+            @Html.ActionLink("Customer", "Index", new { sortOrder = ViewBag.CustomerSort})
         </th>
         <th>
             Part
+        </th>
+        <th>
+            Returned Parts
         </th>
         <th></th>
         <th></th>
@@ -44,16 +56,27 @@
                 @Html.DisplayFor(modelItem => part.Name)<br />
 
             }
+            
+        </td>
+        <td>
+            @if (item.OrderHistory != null)
+            {
+                <p>Yes</p>
+            }
         </td>
         <td>
             @using (Html.BeginForm())
             {
                 @Html.AntiForgeryToken()
-                <input type="submit" value="Return Parts" class="btn btn-default" formaction=@Url.Action("ReturnParts", new {orderID=item.ID }) />
+                if(item.Parts.Count()>0) { 
+                    <input type="submit" value="Return Parts" class="btn btn-default" formaction=@Url.Action("ReturnParts", new {orderID=item.ID }) />
+                    if(item.Paid == false) { 
+                        <input type="submit" value="Mark As Paid" class="btn btn-default" formaction=@Url.Action("MarkPaid", new { orderID=item.ID}) />
+                    }
+                }
             }
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
             @Html.ActionLink("Details", "Details", new { id=item.ID }) |
             @Html.ActionLink("Delete", "Delete", new { id=item.ID })
         </td>

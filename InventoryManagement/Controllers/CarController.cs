@@ -18,10 +18,47 @@ namespace InventoryManagement.Controllers
         private InventoryContext db = new InventoryContext();
 
         // GET: Car
-        public ActionResult Index()
+        public ViewResult Index(string sortOrder, string makeSearch, string modelSearch)
         {
+            
             var suppliers = db.Cars.Include(d => d.Supplier);
-            return View(db.Cars.ToList());
+            var cars = from c in db.Cars select c;
+            if (!String.IsNullOrEmpty(makeSearch))
+            {
+                cars = cars.Where(c => c.Make.Contains(makeSearch));
+            }
+            if(cars.Count()>1 && !String.IsNullOrEmpty(modelSearch))
+            {
+                cars = cars.Where(c => c.Model.Contains(modelSearch));
+            }
+
+            ViewBag.MakeSort = String.IsNullOrEmpty(sortOrder) ? "make_desc" : "";
+            ViewBag.ModelSort = sortOrder == "Model" ? "model_desc" : "Model";
+            ViewBag.YearSort = sortOrder == "Year" ? "year_desc" : "Year";
+
+            switch(sortOrder)
+            {
+                case "make_desc":
+                    cars = cars.OrderByDescending(c => c.Make);
+                    break;
+                case "Model":
+                    cars = cars.OrderBy(c => c.Model);
+                    break;
+                case "model_desc":
+                    cars = cars.OrderByDescending(c => c.Model);
+                    break;
+                case "Year":
+                    cars = cars.OrderBy(c => c.Year);
+                    break;
+                case "year_desc":
+                    cars = cars.OrderByDescending(c => c.Year);
+                    break;
+                default:
+                    cars = cars.OrderBy(c => c.Make);
+                    break;
+            }
+            ModelState.Clear();
+            return View(cars.ToList());
         }
 
         // GET: Car/Details/5

@@ -11,6 +11,7 @@ using InventoryManagement.Models;
 using System.Data.Entity.Infrastructure;
 using System.Web.UI;
 
+
 namespace InventoryManagement.Controllers
 {
     public class PartController : Controller
@@ -20,20 +21,69 @@ namespace InventoryManagement.Controllers
         public static List<int> OrderList = new List<int>();
 
         // GET: Part
-        public ActionResult Index()
+        public ViewResult Index(string sortOrder, string nameSearch, string makeSearch,
+                                string modelSearch, string chassisSearch)
         {
+            //Logic to find and display order related information
             //Fetch number of parts in order
             ViewBag.partCount = OrderList.Count();
             //Fetch details of each item in order
-            foreach(var i in OrderList)
+            foreach (var i in OrderList)
             {
                 Part part = db.Parts.Find(i);
                 Car car = db.Cars.Find(part.CarID);
                 ViewBag.partDetail += car.Details + " " + part.Details + "<br/>";
             }
             ViewBag.orderedParts = OrderList;
+
             var cars = db.Parts.Include(d => d.Car);
-            return View(db.Parts.ToList());
+            var parts = from p in db.Parts select p;
+            //Iterate through search criteria
+            //Allows users the flexibility of searching per category, but unsure if this is the most efficient method
+            if (!String.IsNullOrEmpty(nameSearch))
+            {
+                parts = parts.Where(p => p.Name.Contains(nameSearch)); 
+            }
+            if (parts.Count() > 1 && !String.IsNullOrEmpty(makeSearch))
+            {
+                parts = parts.Where(p => p.Car.Make.Contains(makeSearch));
+            }
+            if (parts.Count() > 1 && !String.IsNullOrEmpty(modelSearch))
+            {
+                parts = parts.Where(p => p.Car.Model.Contains(modelSearch));
+            }
+            if (parts.Count() > 1 && !String.IsNullOrEmpty(chassisSearch))
+            {
+                parts = parts.Where(p => p.Car.Chassis.Contains(chassisSearch));
+            }
+            //Code for sort order
+            //Allows user to sort by name, price, or status
+            ViewBag.NameSort = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewBag.PriceSort = sortOrder == "Price" ? "price_desc" : "Price";
+            ViewBag.StatusSort = sortOrder == "Status" ? "status_desc" : "Status";
+
+            switch (sortOrder) {
+                case "name_desc":
+                    parts = parts.OrderByDescending(p => p.Name);
+                    break;
+                case "Price":
+                    parts = parts.OrderBy(p => p.Price);
+                    break;
+                case "price_desc":
+                    parts = parts.OrderByDescending(p => p.Price);
+                    break;
+                case "Status":
+                    parts = parts.OrderBy(p => p.Status);
+                    break;
+                case "status_desc":
+                    parts = parts.OrderByDescending(p => p.Status);
+                    break;
+                default:
+                    parts = parts.OrderBy(p => p.Name);
+                    break;
+            }
+            ModelState.Clear();
+            return View(parts.ToList());
         }
 
         // GET: Part/Details/5
@@ -49,7 +99,7 @@ namespace InventoryManagement.Controllers
                 return HttpNotFound();
             }
             //Obtain sale information if part is sold
-            if (part.Sold == true)
+            if (part.Status == "Sold")
             {
                 //Find order and respective customer, pass these to UI for user
                 Order order = db.Order.Where(d => d.ID == part.OrderID).FirstOrDefault();
@@ -65,12 +115,15 @@ namespace InventoryManagement.Controllers
         public ActionResult Create(int? ID)
         {
             SelectList carList;
+            //Check if method has a car ID to reference
             if(ID != null)
             {
+                //Yes, display preselected car as default option
                 carList = new SelectList(db.Cars, "ID", "Details", ID);
             }
             else
             {
+                //No, display default list
                 carList = new SelectList(db.Cars, "ID", "Details");
             }
             ViewBag.CarID = carList;
@@ -87,6 +140,7 @@ namespace InventoryManagement.Controllers
             if (ModelState.IsValid)
             {
                 db.Parts.Add(part);
+                part.Status = "Available";
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -103,6 +157,7 @@ namespace InventoryManagement.Controllers
             if (ModelState.IsValid)
             {
                 db.Parts.Add(part);
+                part.Status = "Available";
                 db.SaveChanges();
                 return RedirectToAction("Create", new {id = part.CarID});
             }
@@ -123,9 +178,6 @@ namespace InventoryManagement.Controllers
             {
                 return HttpNotFound();
             }
-            if(part.Sold == true)
-            {
-            }
             ViewBag.CarId = new SelectList(db.Cars, "ID", "Details", part.CarID);
             return View(part);
         }
@@ -135,7 +187,7 @@ namespace InventoryManagement.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "PartID,Name,Condition,Area,Price,CarID")] Part part)
+        public ActionResult Edit([Bind(Include = "PartID,Name,Condition,Area,Price,CarID,Status")] Part part)
         {
             if (ModelState.IsValid)
             {

@@ -16,34 +16,45 @@ namespace InventoryManagement.Controllers
         private InventoryContext db = new InventoryContext();
 
         // GET: Order
-        public ActionResult Index()
+        public ActionResult Index(string sortOrder, string customerSearch)
         {
             ViewBag.partDetail = "";
             var order = db.Order.Include(o => o.Customer);
+
+            ViewBag.DateSort = String.IsNullOrEmpty(sortOrder) ? "date_desc" : "";
+            ViewBag.PaidSort = sortOrder == "Paid" ? "paid_desc" : "Paid";
+            ViewBag.CustomerSort = sortOrder == "Customer" ? "cust_desc" : "Customer";
+
+            if(!String.IsNullOrEmpty(customerSearch))
+            {
+                order = order.Where(c => c.Customer.Name.Contains(customerSearch));
+            }
+            switch(sortOrder)
+            {
+                case "Date":
+                    order = order.OrderByDescending(c => c.Date);
+                    break;
+                case "Paid":
+                    order = order.OrderBy(c => c.Paid);
+                    break;
+                case "paid_desc":
+                    order = order.OrderByDescending(c => c.Paid);
+                    break;
+                case "Customer":
+                    order = order.OrderBy(c => c.Customer.Name);
+                    break;
+                case "cust_desc":
+                    order = order.OrderByDescending(c => c.Customer.Name);
+                    break;
+                default:
+                    order = order.OrderByDescending(c => c.Date);
+                    break;
+            }
+            ModelState.Clear();
             return View(order.ToList());
         }
 
-        public void CreatePartDetail(Order order)
-        {
-            int orderPrice = 0;
-            //Create list of part(s) in order
-            List<Part> partList = db.Parts.Where(b => b.OrderID == order.ID).ToList();
-
-            //Cycle through parts in order
-            foreach (var part in partList)
-            {
-                //Locate original car
-                Car carToFind = db.Cars.Find(part.CarID);
-
-                //Cast part and car details to ViewBag.partDetail
-                ViewBag.partDetail += part.Details + " " + carToFind.Details + "<br />";
-
-                //Cast sale price
-                orderPrice += part.Price;
-            }
-            ViewBag.salePrice = "$" + orderPrice.ToString();
-            
-        }
+        
 
         // GET: Order/Details/5
         public ActionResult Details(int? id)
@@ -66,11 +77,15 @@ namespace InventoryManagement.Controllers
         public ActionResult Create()
         {
             //Variable to store total order price
-            var orderPrice = new int();
+            var orderPrice = new double();
             //Cast PartList session to int list
             List<int> partList = Session["PartList"] as List<int>;
             //Sort through all items in part list
             //Obtain detail for each part
+            if (partList == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
             foreach (var i in partList)
             {
                 Part part = db.Parts.Find(i);
@@ -95,18 +110,26 @@ namespace InventoryManagement.Controllers
         {
             List<int> partList = Session["PartList"] as List<int>;
             order.Parts = new List<Part>();
+            //Check if partList has been cleared
+            if(partList == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            //Add parts to order, update part to match
             foreach (var i in partList)
             {
                 var partToUpdate = db.Parts.Find(i);
                 order.Parts.Add(partToUpdate);
-                partToUpdate.Sold = true;
+                partToUpdate.Status = "Sold";
                 partToUpdate.OrderID = order.ID;
             }
             if (ModelState.IsValid)
             {
                 db.Order.Add(order);
                 db.SaveChanges();
+                //Clear orderlist, and set session to null
                 PartController.OrderList.Clear();
+                Session["PartList"] = null;
                 return RedirectToAction("Index");
             }
             ViewBag.CustomerID = new SelectList(db.Customer, "CustomerID", "Name", order.CustomerID);
@@ -134,7 +157,7 @@ namespace InventoryManagement.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Date,Paid,CustomerID")] Order order)
+        public ActionResult Edit([Bind(Include = "ID,Paid,CustomerID")] Order order)
         {
             if (ModelState.IsValid)
             {
@@ -154,6 +177,7 @@ namespace InventoryManagement.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Order order = db.Order.Find(id);
+            CreatePartDetail(order);
             if (order == null)
             {
                 return HttpNotFound();
@@ -193,25 +217,84 @@ namespace InventoryManagement.Controllers
             return RedirectToAction("Index", "Part");
         }
 
-        public ActionResult ReturnParts(int? orderID, int? partID)
+        //Allow user to return parts
+        //Will pass a orderID when called from the Index page, redirecting to ReturnParts view
+        //Will pass a partID when called from ReturnParts View
+        public ActionResult ReturnParts(int? orderID, int? partID, bool? partDefective)
         {
             if (orderID != null)
             {
+                //Find order from ID
                 Order order = db.Order.Find(orderID);
+                //Return ReturnParts view with found order as context
                 return View(order);
             }
             if(partID != null)
             {
+                //Find part, mark status as returned
                 Part part = db.Parts.Find(partID);
-                part.Sold = false;
+                if(partDefective == true)
+                {
+                    part.Status = "Defective";
+                }
+                else { 
+                    part.Status = "Available";
+                }
+                //Find order and remove returned part
+
                 Order order = db.Order.Where(d => d.ID == part.OrderID).FirstOrDefault();
                 order.Parts.Remove(part);
+
+                //Add a record of removed parts
+                Car car = db.Cars.Find(part.CarID);
+                order.OrderHistory += (part.Area + " " + part.Car.Make + " " + 
+                                    part.Car.Model + " " + part.Name + "</ br>");
                 db.SaveChanges();
+                
+                if(order.Parts.Count() == 0)
+                    //No more parts in order, redirect to order index
+                {
+                    return RedirectToAction("Index");
+                }
                 return View(order);
             }
 
             return RedirectToAction("Index");
 
+        }
+
+        //Method to mark an order as paid
+        public ActionResult MarkPaid(int? orderID)
+        {
+            //Check orderID
+            if(orderID == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            }
+            //Find order in db and mark paid as true
+            Order order = db.Order.Find(orderID);
+            order.Paid = true;
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        //Helper to fetch part information pertaining to order
+        public void CreatePartDetail(Order order)
+        {
+            int orderPrice = 0;
+            //Create list of part(s) in order
+            List<Part> partList = db.Parts.Where(b => b.OrderID == order.ID).ToList();
+            //Cycle through parts in order
+            foreach (var part in partList)
+            {
+                //Cast part and car details to ViewBag.partDetail
+                ViewBag.partDetail += part.Details + " " + part.Car.Details + "<br />";
+
+                //Cast sale price
+                orderPrice += part.Price;
+            }
+            ViewBag.salePrice = "$" + orderPrice.ToString();
         }
     }
 }
